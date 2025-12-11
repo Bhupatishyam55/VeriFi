@@ -59,8 +59,8 @@ export default function DashboardPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-display font-bold text-white">Dashboard</h1>
-          <p className="text-navy-400 mt-1">
+          <h1 className="text-xl md:text-2xl font-display font-bold text-white">Dashboard</h1>
+          <p className="text-sm md:text-base text-navy-400 mt-1">
             Real-time monitoring of document validation and fraud detection
           </p>
         </div>
@@ -81,7 +81,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {isLoading ? (
           <>
             {[1, 2, 3, 4].map((i) => (
@@ -130,7 +130,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Additional Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
         <div className="glass-card p-6 flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-gold-400/20 to-gold-400/5 flex items-center justify-center">
             <TrendingUp className="w-7 h-7 text-gold-400" />
@@ -167,9 +167,11 @@ export default function DashboardPage() {
       </div>
 
       {/* Chart and Live Feed */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         <div className="lg:col-span-2">
-          <DashboardChart />
+          <div className="w-full h-[300px]">
+            <DashboardChart />
+          </div>
         </div>
         <div className="lg:col-span-1">
           <LiveFeed />

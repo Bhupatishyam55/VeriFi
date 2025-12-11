@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Header } from '@/components/layout/Header'
+import { MobileHeader } from '@/components/layout/MobileHeader'
 import { ToastProvider } from '@/components/providers/ToastProvider'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 
@@ -21,9 +22,10 @@ export default function RootLayout({
         <ErrorBoundary>
           <ToastProvider>
             <Sidebar />
+            <MobileHeader />
             <Header />
-            <main className="ml-72 pt-16 min-h-screen">
-              <div className="p-6">
+            <main className="ml-0 md:ml-72 pt-16 md:pt-16 min-h-screen">
+              <div className="p-4 md:p-6">
                 {children}
               </div>
             </main>

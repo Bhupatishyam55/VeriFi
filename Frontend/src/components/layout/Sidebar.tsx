@@ -27,7 +27,11 @@ const bottomNavItems = [
   { href: '/help', label: 'Help & Support', icon: HelpCircle },
 ]
 
-export function Sidebar() {
+interface SidebarProps {
+  onClose?: () => void
+}
+
+export function Sidebar({ onClose }: SidebarProps = {}) {
   const pathname = usePathname()
   const { addToast } = useToast()
 
@@ -40,8 +44,14 @@ export function Sidebar() {
     })
   }
 
+  const handleLinkClick = () => {
+    if (onClose) {
+      onClose()
+    }
+  }
+
   return (
-    <aside className="fixed left-0 top-0 h-screen w-72 bg-navy-900/80 backdrop-blur-xl border-r border-navy-800 z-40 flex flex-col">
+    <aside className="hidden md:flex fixed left-0 top-0 h-screen w-72 bg-navy-900/80 backdrop-blur-xl border-r border-navy-800 z-40 flex-col">
       {/* Logo Section */}
       <div className="p-6 border-b border-navy-800">
         <div className="flex items-center gap-3">
@@ -70,6 +80,7 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={handleLinkClick}
               className={cn(
                 'group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300',
                 isActive
@@ -107,6 +118,7 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={handleLinkClick}
               className="flex items-center gap-3 px-4 py-2.5 text-navy-400 rounded-xl hover:bg-navy-800/50 hover:text-white transition-all duration-300"
             >
               <Icon className="w-5 h-5" />

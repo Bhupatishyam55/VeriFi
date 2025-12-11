@@ -14,7 +14,7 @@ export type DashboardStats = {
   recent_scans: RecentScan[]
 }
 
-export type UploadResponse = {
+export type UploadResponse = { 
   task_id: string
   message: string
 }

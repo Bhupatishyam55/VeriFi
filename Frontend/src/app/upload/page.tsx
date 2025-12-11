@@ -114,11 +114,11 @@ export default function UploadPage() {
 
       {/* Page Header */}
       <div className="text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-gold-400/20 to-gold-400/5 mb-4">
-          <Shield className="w-8 h-8 text-gold-400" />
+        <div className="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-gold-400/20 to-gold-400/5 mb-4">
+          <Shield className="w-6 h-6 md:w-8 md:h-8 text-gold-400" />
         </div>
-        <h1 className="text-3xl font-display font-bold text-white">Smart Document Upload</h1>
-        <p className="text-navy-400 mt-2 max-w-lg mx-auto">
+        <h1 className="text-2xl md:text-3xl font-display font-bold text-white">Smart Document Upload</h1>
+        <p className="text-sm md:text-base text-navy-400 mt-2 max-w-lg mx-auto px-4">
           Upload invoices, contracts, or any financial documents for AI-powered fraud detection
           and validation against our 70TB database.
         </p>
@@ -128,7 +128,7 @@ export default function UploadPage() {
       <DropZone onFileSelect={handleFileSelect} disabled={isScanning || isUploading} />
 
       {/* Info Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
         <div className="glass-card p-6 text-center">
           <div className="w-12 h-12 mx-auto rounded-xl bg-gold-400/10 flex items-center justify-center mb-4">
             <Clock className="w-6 h-6 text-gold-400" />

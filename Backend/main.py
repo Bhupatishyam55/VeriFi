@@ -10,6 +10,11 @@ from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from pypdf import PdfReader
+from pdf2image import convert_from_bytes
+import pytesseract
+from PIL import Image
+from vector_store import search_duplicate, add_to_index
+from fraud_detection import detect_pii, analyze_metadata
 
 # In-memory storage
 db: Dict[str, dict] = {}
@@ -46,7 +51,7 @@ class Anomaly(BaseModel):
 class ScanResult(BaseModel):
     file_id: str
     filename: str
-    status: str
+    status: str  # can be 'pending', 'scanning', 'completed', 'error', 'DUPLICATE'
     fraud_score: int
     severity: str
     is_duplicate: bool
@@ -168,6 +173,55 @@ def analyze_text(text: str) -> dict:
     }
 
 
+def clean_text(text: str) -> str:
+    # Remove non-printable / special chars but keep common punctuation
+    cleaned = re.sub(r"[^\w\s.,:/-]", " ", text)
+    cleaned = re.sub(r"\s+", " ", cleaned)
+    return cleaned.strip()
+
+
+def extract_text_from_file(content: bytes, filename: str, max_pages: int = 10) -> str:
+    """
+    Extract text from PDFs (via images + Tesseract) or images directly.
+    Keeps CPU reasonable by limiting pages and simple preprocessing.
+    """
+    name = filename.lower()
+
+    # Handle images directly
+    if name.endswith((".jpg", ".jpeg", ".png")):
+        try:
+            image = Image.open(io.BytesIO(content)).convert("L")  # grayscale
+            text = pytesseract.image_to_string(image)
+            return clean_text(text)
+        except Exception:
+            return ""
+
+    # Handle PDFs: convert pages to images then OCR
+    if name.endswith(".pdf"):
+        try:
+            pages = convert_from_bytes(content, dpi=200, first_page=1, last_page=max_pages)
+            extracted = []
+            for page in pages:
+                gray = page.convert("L")
+                extracted.append(pytesseract.image_to_string(gray))
+            return clean_text(" ".join(extracted))
+        except Exception:
+            # Fallback to pypdf text extract if OCR fails
+            try:
+                reader = PdfReader(io.BytesIO(content))
+                pages_text = []
+                for i, page in enumerate(reader.pages):
+                    if i >= max_pages:
+                        break
+                    pages_text.append(page.extract_text() or "")
+                return clean_text(" ".join(pages_text))
+            except Exception:
+                return ""
+
+    # Unknown file type: return empty
+    return ""
+
+
 def build_result_from_name(task_id: str, filename: str, processing_time: int = 0) -> ScanResult:
     """Fallback simple heuristic based on filename for non-PDF or unreadable files."""
     name = filename.lower()
@@ -286,22 +340,73 @@ async def upload_scan(file: UploadFile = File(...)):
     content = await file.read()
 
     result: ScanResult
-    text_content = ""
-
-    # Attempt PDF text extraction
-    if filename.lower().endswith(".pdf") and content:
-        try:
-            reader = PdfReader(io.BytesIO(content))
-            pages_text = [page.extract_text() or "" for page in reader.pages]
-            text_content = "\n".join(pages_text)
-        except Exception:
-            text_content = ""
+    text_content = extract_text_from_file(content, filename)
 
     # Calculate processing time
     processing_time = int((datetime.now() - start_time).total_seconds() * 1000)
 
-    if text_content.strip():
+    text_is_present = bool(text_content.strip())
+
+    # 1) Deduplication check BEFORE adding to index
+    if text_is_present:
+        is_dup, score = search_duplicate(text_content)
+        if is_dup:
+            duplicate_result = build_result_from_name(task_id, filename, processing_time)
+            duplicate_result.status = "DUPLICATE"
+            duplicate_result.fraud_score = 0
+            duplicate_result.is_duplicate = True
+            duplicate_result.duplicate_source_id = f"dup-score-{score:.2f}"
+            duplicate_result.severity = "SAFE"
+            db[task_id] = duplicate_result.dict()
+            return {"task_id": task_id, "message": "Duplicate detected"}
+
+    # 2) Run analysis
+    if text_is_present:
         result = build_result_from_text(task_id, filename, text_content, processing_time)
+        
+        # Phase 3: Fraud Logic Layer - PII Detection and Metadata Forensics
+        # Run PII detection
+        pii_detected = detect_pii(text_content)
+        if pii_detected:
+            for pii_type in pii_detected:
+                if pii_type == "PAN_DETECTED":
+                    result.anomalies.append(
+                        Anomaly(
+                            type="PII Detected",
+                            description="PAN card number found in document",
+                            confidence=0.95,
+                        )
+                    )
+                elif pii_type == "AADHAAR_DETECTED":
+                    result.anomalies.append(
+                        Anomaly(
+                            type="PII Detected",
+                            description="Aadhaar number found in document",
+                            confidence=0.95,
+                        )
+                    )
+        
+        # Run metadata forensics (only for PDFs)
+        if filename.lower().endswith('.pdf'):
+            metadata_issue = analyze_metadata(content, text_content)
+            if metadata_issue == "METADATA_MISMATCH":
+                result.anomalies.append(
+                    Anomaly(
+                        type="Metadata Mismatch",
+                        description="PDF creation date is later than dates mentioned in document content",
+                        confidence=0.88,
+                    )
+                )
+                # Increase fraud_score by 30
+                result.fraud_score = min(100, result.fraud_score + 30)
+                # Update severity if needed
+                if result.fraud_score >= 70:
+                    result.severity = "CRITICAL"
+                elif result.fraud_score >= 30:
+                    result.severity = "WARNING"
+        
+        # 3) Only add unique docs to index after passing dedup check
+        add_to_index(text_content)
     else:
         # Fallback to filename heuristic or basic safe result
         result = build_result_from_name(task_id, filename, processing_time)

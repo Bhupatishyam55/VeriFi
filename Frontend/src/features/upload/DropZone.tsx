@@ -98,7 +98,7 @@ export function DropZone({ onFileSelect, disabled }: DropZoneProps) {
       {/* Drop Zone */}
       <div
         className={cn(
-          'relative border-2 border-dashed rounded-2xl p-12 transition-all duration-300 cursor-pointer',
+          'relative border-2 border-dashed rounded-2xl p-6 md:p-12 transition-all duration-300 cursor-pointer',
           isDragging
             ? 'border-gold-400 bg-gold-400/5 scale-[1.02]'
             : 'border-navy-700 hover:border-navy-600 bg-navy-800/30',
@@ -125,13 +125,13 @@ export function DropZone({ onFileSelect, disabled }: DropZoneProps) {
         <div className="relative flex flex-col items-center text-center">
           {selectedFile ? (
             <>
-              <div className="w-20 h-20 rounded-2xl bg-success-500/10 flex items-center justify-center mb-6">
-                <FileText className="w-10 h-10 text-success-400" />
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-success-500/10 flex items-center justify-center mb-4 md:mb-6">
+                <FileText className="w-8 h-8 md:w-10 md:h-10 text-success-400" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">File Ready</h3>
-              <div className="flex items-center gap-2 text-navy-400 mb-4">
-                <span className="text-success-400 font-medium">{selectedFile.name}</span>
-                <span className="text-navy-600">•</span>
+              <h3 className="text-lg md:text-xl font-semibold text-white mb-2">File Ready</h3>
+              <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-sm md:text-base text-navy-400 mb-4 px-2">
+                <span className="text-success-400 font-medium truncate max-w-full">{selectedFile.name}</span>
+                <span className="hidden sm:inline text-navy-600">•</span>
                 <span>{formatSize(selectedFile.size)}</span>
               </div>
               {validationError && (
@@ -145,7 +145,7 @@ export function DropZone({ onFileSelect, disabled }: DropZoneProps) {
             <>
               <div
                 className={cn(
-                  'w-20 h-20 rounded-2xl flex items-center justify-center mb-6 transition-all duration-300',
+                  'w-16 h-16 md:w-20 md:h-20 rounded-2xl flex items-center justify-center mb-4 md:mb-6 transition-all duration-300',
                   isDragging
                     ? 'bg-gold-400/20 scale-110'
                     : 'bg-navy-700'
@@ -153,15 +153,15 @@ export function DropZone({ onFileSelect, disabled }: DropZoneProps) {
               >
                 <CloudUpload
                   className={cn(
-                    'w-10 h-10 transition-colors',
+                    'w-8 h-8 md:w-10 md:h-10 transition-colors',
                     isDragging ? 'text-gold-400' : 'text-navy-400'
                   )}
                 />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">
+              <h3 className="text-lg md:text-xl font-semibold text-white mb-2 px-2">
                 {isDragging ? 'Drop your file here' : 'Drag & Drop your document'}
               </h3>
-              <p className="text-navy-400 mb-6">
+              <p className="text-sm md:text-base text-navy-400 mb-4 md:mb-6 px-2">
                 or <span className="text-gold-400 underline">browse files</span> from your computer
               </p>
             </>
@@ -189,19 +189,19 @@ export function DropZone({ onFileSelect, disabled }: DropZoneProps) {
 
       {/* Selected File Preview & Actions */}
       {selectedFile && (
-        <div className="glass-card p-6 animate-fade-in">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-navy-700 flex items-center justify-center">
-                <FileText className="w-6 h-6 text-gold-400" />
+        <div className="glass-card p-4 md:p-6 animate-fade-in">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-navy-700 flex items-center justify-center flex-shrink-0">
+                <FileText className="w-5 h-5 md:w-6 md:h-6 text-gold-400" />
               </div>
-              <div>
-                <p className="font-medium text-white">{selectedFile.name}</p>
-                <p className="text-sm text-navy-400">
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-white truncate text-sm md:text-base">{selectedFile.name}</p>
+                <p className="text-xs md:text-sm text-navy-400">
                   {formatSize(selectedFile.size)} • Ready for scanning
                 </p>
                 {validationError && (
-                  <p className="text-sm text-danger-400 mt-1 flex items-center gap-1">
+                  <p className="text-xs md:text-sm text-danger-400 mt-1 flex items-center gap-1">
                     <AlertCircle className="w-3 h-3" />
                     {validationError}
                   </p>
@@ -209,7 +209,7 @@ export function DropZone({ onFileSelect, disabled }: DropZoneProps) {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
               <button
                 onClick={(e) => {
                   e.stopPropagation()
@@ -226,12 +226,12 @@ export function DropZone({ onFileSelect, disabled }: DropZoneProps) {
                 }}
                 disabled={disabled}
                 className={cn(
-                  'btn-primary flex items-center gap-2',
+                  'btn-primary flex items-center justify-center gap-2 flex-1 sm:flex-initial',
                   disabled && 'opacity-50 cursor-not-allowed'
                 )}
               >
                 <Check className="w-5 h-5" />
-                Start Scan
+                <span className="text-sm md:text-base">Start Scan</span>
               </button>
             </div>
           </div>

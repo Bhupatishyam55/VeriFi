@@ -12,33 +12,33 @@ export function PDFViewer({ filename }: PDFViewerProps) {
   return (
     <div className="h-full flex flex-col bg-navy-800/30 rounded-2xl border border-navy-700 overflow-hidden">
       {/* Toolbar */}
-      <div className="flex items-center justify-between p-4 border-b border-navy-700 bg-navy-900/50">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gold-400/10 flex items-center justify-center">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 md:p-4 border-b border-navy-700 bg-navy-900/50">
+        <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+          <div className="w-8 h-8 rounded-lg bg-gold-400/10 flex items-center justify-center flex-shrink-0">
             <FileText className="w-4 h-4 text-gold-400" />
           </div>
-          <div>
-            <p className="text-sm font-medium text-white">{filename}</p>
+          <div className="min-w-0">
+            <p className="text-xs md:text-sm font-medium text-white truncate">{filename}</p>
             <p className="text-xs text-navy-500">PDF Preview</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button className="p-2 text-navy-400 hover:text-white hover:bg-navy-700 rounded-lg transition-colors">
+        <div className="flex items-center gap-1 md:gap-2 flex-wrap">
+          <button className="p-1.5 md:p-2 text-navy-400 hover:text-white hover:bg-navy-700 rounded-lg transition-colors">
             <ZoomOut className="w-4 h-4" />
           </button>
-          <span className="text-sm text-navy-400 px-2">100%</span>
-          <button className="p-2 text-navy-400 hover:text-white hover:bg-navy-700 rounded-lg transition-colors">
+          <span className="text-xs md:text-sm text-navy-400 px-1 md:px-2">100%</span>
+          <button className="p-1.5 md:p-2 text-navy-400 hover:text-white hover:bg-navy-700 rounded-lg transition-colors">
             <ZoomIn className="w-4 h-4" />
           </button>
-          <div className="w-px h-6 bg-navy-700 mx-2" />
-          <button className="p-2 text-navy-400 hover:text-white hover:bg-navy-700 rounded-lg transition-colors">
+          <div className="w-px h-6 bg-navy-700 mx-1 md:mx-2 hidden sm:block" />
+          <button className="p-1.5 md:p-2 text-navy-400 hover:text-white hover:bg-navy-700 rounded-lg transition-colors">
             <RotateCw className="w-4 h-4" />
           </button>
-          <button className="p-2 text-navy-400 hover:text-white hover:bg-navy-700 rounded-lg transition-colors">
+          <button className="p-1.5 md:p-2 text-navy-400 hover:text-white hover:bg-navy-700 rounded-lg transition-colors hidden sm:block">
             <Printer className="w-4 h-4" />
           </button>
-          <button className="p-2 text-navy-400 hover:text-white hover:bg-navy-700 rounded-lg transition-colors">
+          <button className="p-1.5 md:p-2 text-navy-400 hover:text-white hover:bg-navy-700 rounded-lg transition-colors">
             <Download className="w-4 h-4" />
           </button>
         </div>

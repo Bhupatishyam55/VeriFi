@@ -39,9 +39,9 @@ export function Header() {
   const unreadCount = notifications.filter((n) => n.unread).length
 
   return (
-    <header className="fixed top-0 left-72 right-0 h-16 bg-navy-900/60 backdrop-blur-xl border-b border-navy-800 z-30 flex items-center justify-between px-6">
+    <header className="hidden md:flex fixed top-0 left-72 right-0 h-16 bg-navy-900/60 backdrop-blur-xl border-b border-navy-800 z-30 items-center justify-between px-6">
       {/* Search Bar */}
-      <div className="flex-1 max-w-xl">
+      <div className="flex-1 max-w-xl hidden lg:block">
         <SearchBar
           placeholder="Search documents, invoices, reports..."
           onSearch={(query) => {
