@@ -1,41 +1,43 @@
-import numpy as np
+"""
+vector_store.py - FAISS Text Search + Visual Hashing Storage
+"""
+import os
 import faiss
+import numpy as np
+import json
 from sentence_transformers import SentenceTransformer
-from typing import Tuple
 
-# Initialize model and FAISS index (inner product on normalized vectors)
-model = SentenceTransformer('all-MiniLM-L6-v2')
-embedding_dim = model.get_sentence_embedding_dimension()
-index = faiss.IndexFlatIP(embedding_dim)
+model = SentenceTransformer("all-MiniLM-L6-v2")
+INDEX_FILE = "docs.index"
+HASH_DB = "hashes.json"
 
+if os.path.exists(INDEX_FILE):
+    index = faiss.read_index(INDEX_FILE)
+else:
+    index = faiss.IndexFlatIP(model.get_sentence_embedding_dimension())
 
-def get_embedding(text: str) -> np.ndarray:
-    """Convert text to a normalized float32 vector."""
-    emb = model.encode([text], convert_to_numpy=True)[0].astype('float32')
-    # Normalize for cosine similarity via inner product
-    norm = np.linalg.norm(emb)
-    if norm > 0:
-        emb = emb / norm
-    return emb
+def load_hashes():
+    if os.path.exists(HASH_DB):
+        with open(HASH_DB, "r") as f: return json.load(f)
+    return []
 
-
-def search_duplicate(text: str, threshold: float = 0.9) -> Tuple[bool, float]:
-    """Search FAISS for a similar vector. Returns (is_duplicate, score)."""
-    if index.ntotal == 0:
-        return False, 0.0
-
-    emb = get_embedding(text).reshape(1, -1)
+def search_duplicate(text: str, img_hash: str = None):
+    """Checks for visual duplicates OR text similarity."""
+    if img_hash and img_hash in load_hashes(): return True, 1.0
+    if index.ntotal == 0 or not text.strip(): return False, 0.0
+    emb = model.encode([text], convert_to_numpy=True).astype("float32")
+    faiss.normalize_L2(emb)
     scores, _ = index.search(emb, k=1)
-    score = float(scores[0][0]) if scores.size > 0 else 0.0
+    return float(scores[0][0]) >= 0.9, float(scores[0][0])
 
-    # Inner product on normalized vectors is cosine similarity
-    if score >= threshold:
-        return True, score
-    return False, score
-
-
-def add_to_index(text: str) -> None:
-    """Add text embedding to the FAISS index."""
-    emb = get_embedding(text).reshape(1, -1)
-    index.add(emb)
-
+def add_to_index(text: str, img_hash: str = None):
+    if text.strip():
+        emb = model.encode([text], convert_to_numpy=True).astype("float32")
+        faiss.normalize_L2(emb)
+        index.add(emb)
+        faiss.write_index(index, INDEX_FILE)
+    if img_hash:
+        hashes = load_hashes()
+        if img_hash not in hashes:
+            hashes.append(img_hash)
+            with open(HASH_DB, "w") as f: json.dump(hashes, f)
